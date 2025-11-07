@@ -1,3 +1,9 @@
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
+
 plugins {
     id("java")
 //    id("org.jetbrains.kotlin.jvm") version "2.0.0"
