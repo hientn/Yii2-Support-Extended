@@ -50,7 +50,7 @@ jobs:
         run: ./gradlew clean test --no-daemon --stacktrace
         continue-on-error: true
 
-      - name: Retry: Clear potential corrupted cache and rebuild (only if first attempt failed)
+      - name: Retry Clear potential corrupted cache and rebuild (only if first attempt failed)
         if: ${{ failure() }}
         run: |
           echo "First attempt failed — clearing possible corrupted Gradle cache and retrying..."
