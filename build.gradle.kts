@@ -46,7 +46,12 @@ platformPluginsAssociation["2024.1"] =
     "com.jetbrains.php:241.14494.237, org.jetbrains.plugins.phpstorm-remote-interpreter, com.jetbrains.twig, PsiViewer:241.14494.158-EAP-SNAPSHOT, com.intellij.properties:241.14494.150"
 
 val bundledPlugins = "DatabaseTools, webDeployment, com.intellij.css, terminal"
-val platformPlugins = platformPluginsAssociation[platformVersion] + ", $bundledPlugins"
+val defaultPlatformPlugins = "com.jetbrains.php, org.jetbrains.plugins.phpstorm-remote-interpreter, com.jetbrains.twig"
+val platformPlugins = ((platformPluginsAssociation[platformVersion] ?: defaultPlatformPlugins) + ", $bundledPlugins")
+    .split(',')
+    .map(String::trim)
+    .filter(String::isNotEmpty)
+    .joinToString(",")
 
 repositories {
     mavenCentral()
@@ -66,7 +71,7 @@ dependencies {
 intellij {
     version.set(platformVersion)
     type.set("PS")
-    plugins.set(listOf(*platformPlugins.split(',').map(String::trim).filter(String::isNotEmpty).toTypedArray()))
+    plugins.set(platformPlugins.split(',').map(String::trim).filter(String::isNotEmpty))
 }
 
 sourceSets {
