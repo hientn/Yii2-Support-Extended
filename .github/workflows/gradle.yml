@@ -7,7 +7,7 @@ on:
     branches: [ master ]
 
 env:
-  GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx1024m"
+  GRADLE_OPTS: -Dorg.gradle.jvmargs=-Xmx1024m
 
 jobs:
   test:
@@ -23,13 +23,12 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-          cache: 'gradle'
+          cache: gradle
 
       - name: Cache Gradle wrapper & caches
         uses: actions/cache@v4
         id: gradle-cache
         with:
-          # cache gradle dependencies & wrapper to speed up builds
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper/
@@ -46,21 +45,19 @@ jobs:
           java -version
           ./gradlew -version
 
-      # First attempt: run tests normally. Allow failure so we can retry after clearing cache.
       - name: Run Tests (first attempt)
         id: first-attempt
         run: ./gradlew clean test --no-daemon --stacktrace
         continue-on-error: true
 
-      # If first attempt failed, clear potentially corrupted jar & caches and retry once
-      - name: Retry: Clear potential corrupted cache and rebuild (only if first failed)
-        if: ${{ failure() && steps.first-attempt.outcome == 'failure' }}
+      - name: Retry: Clear potential corrupted cache and rebuild (only if first attempt failed)
+        if: ${{ failure() }}
         run: |
           echo "First attempt failed — clearing possible corrupted Gradle cache and retrying..."
           ./gradlew --stop || true
-          # remove problematic cached jars (example: jackson-core) and general caches; adjust as needed
+          # remove possible corrupted cached jars (adjust pattern if needed)
           rm -f ~/.gradle/caches/jars-*/**/jackson-core-2.*.jar || true
-          # full cache fallback (uncomment to be more aggressive)
+          # fallback to remove all caches if necessary (commented by default)
           # rm -rf ~/.gradle/caches/
           ./gradlew clean test --refresh-dependencies --no-daemon --stacktrace
 
@@ -73,7 +70,7 @@ jobs:
             **/build/test-results/test/TEST-*.xml
             **/build/test-results/**/*.xml
 
-      - name: Publish JUnit report to Actions (optional visual)
+      - name: Publish JUnit report to Actions (visual)
         if: always()
         uses: dorny/test-reporter@v1
         with:
@@ -84,7 +81,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Upload plugin zip if it's built (some projects produce artifacts even during tests)
       - name: Upload plugin artifact (if exists)
         if: always()
         uses: actions/upload-artifact@v4
